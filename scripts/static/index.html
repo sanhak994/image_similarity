@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Photo Pair Review</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script type="module" src="/static/app.js"></script>
+  </head>
+<body>
+  <header class="topbar">
+    <div class="title">Photo Pair Review</div>
+  </header>
+
+  <nav class="stepper">
+    <button class="step-button active" data-step="setup">1. Setup</button>
+    <button class="step-button" data-step="process">2. Start process</button>
+    <button class="step-button" data-step="review">3. Review pairs</button>
+    <button class="step-button" data-step="extra">4. Extra options</button>
+  </nav>
+
+  <main>
+    <section class="panel step centered" data-step="setup">
+      <div class="panel-title">Setup</div>
+      <div class="panel-stack">
+        <div class="panel-row center">
+          <label for="primary-select">Main library:</label>
+          <select id="primary-select">
+            <option value="photos">Photos</option>
+            <option value="iphoto">iPhoto</option>
+          </select>
+        </div>
+        <div class="panel-row center">
+          <button id="save-primary" class="primary">Save</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel step hidden" data-step="process">
+      <div class="panel-title">Start a process</div>
+      <div class="panel-row stack">
+        <div class="row">
+          <label>Photos lib path</label>
+          <input id="scan-photos-lib" type="text" placeholder="/Volumes/Storage/...photoslibrary" />
+        </div>
+        <div class="row">
+          <label>iPhoto lib path (optional)</label>
+          <input id="scan-iphoto-lib" type="text" placeholder="/Volumes/Storage/...photolibrary" />
+        </div>
+        <div class="row inline">
+          <label>Hash method</label>
+          <select id="scan-hash-method">
+            <option value="phash">phash</option>
+            <option value="ahash">ahash</option>
+            <option value="dhash">dhash</option>
+            <option value="whash">whash</option>
+          </select>
+          <label>Hash size</label>
+          <input id="scan-hash-size" type="number" value="16" min="8" max="32" />
+          <label>Dupe threshold</label>
+          <input id="scan-thr-dupes" type="number" value="5" min="0" max="64" />
+          <label>Cross threshold</label>
+          <input id="scan-thr-cross" type="number" value="8" min="0" max="64" />
+          <label>Workers</label>
+          <input id="scan-workers" type="number" value="4" min="1" max="32" />
+          <label class="checkbox"><input id="scan-prefer-edited" type="checkbox" /> Prefer edited</label>
+        </div>
+        <button id="start-scan" class="primary">Start similarity scan</button>
+        <progress id="scan-progress" max="1" value="0" hidden></progress>
+        <div class="log-header">
+          <span>Scan log</span>
+        </div>
+        <pre id="scan-log" class="log"></pre>
+      </div>
+    </section>
+
+    <section class="panel step hidden" data-step="review">
+      <div class="panel-title">Review pairs</div>
+      <div class="panel-row center status-row">
+        <span id="progress">0 / 0</span>
+        <span id="pair-meta"></span>
+        <label class="inline jump">
+          Jump to #
+          <input id="jump-index" type="number" min="1" value="1" />
+          <button id="jump-button" class="secondary">Go</button>
+        </label>
+      </div>
+      <div class="controls">
+        <button id="keep-left" class="primary">Keep Left (L)</button>
+        <button id="keep-right" class="primary">Keep Right (R)</button>
+        <button id="keep-both">Keep Both (B)</button>
+        <button id="delete-both" class="danger">Delete Both</button>
+        <button id="keep-primary">Keep Main, Delete Other</button>
+        <button id="skip">Skip/Next (N)</button>
+        <button id="prev">Back (P)</button>
+      </div>
+
+      <div class="viewer">
+        <div class="pane" id="left-pane">
+          <div class="pane-header">
+            <span class="badge" id="left-library"></span>
+            <span id="left-filename" class="filename"></span>
+          </div>
+          <div class="image-frame">
+            <img id="left-image" alt="Left" />
+          </div>
+          <div class="meta">
+            <span id="left-uuid"></span>
+          </div>
+        </div>
+        <div class="pane" id="right-pane">
+          <div class="pane-header">
+            <span class="badge" id="right-library"></span>
+            <span id="right-filename" class="filename"></span>
+          </div>
+          <div class="image-frame">
+            <img id="right-image" alt="Right" />
+          </div>
+          <div class="meta">
+            <span id="right-uuid"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-row stack">
+        <div class="row inline">
+          <label>Album name</label>
+          <input id="album-name" type="text" placeholder="To Delete (reviewed)" />
+          <label class="checkbox"><input id="album-dry-run" type="checkbox" /> Dry run</label>
+        </div>
+        <button id="start-album" class="primary">Create deletion album</button>
+        <progress id="album-progress" max="1" value="0" hidden></progress>
+        <pre id="album-log" class="log"></pre>
+      </div>
+    </section>
+
+    <section class="panel step hidden" data-step="extra">
+      <div class="panel-title">Extra options</div>
+      <div class="panel-row stack">
+        <div class="row inline">
+          <label>Source library</label>
+          <input id="extra-export-src" type="text" placeholder="/path/to/library" />
+          <label>Other library</label>
+          <input id="extra-export-other" type="text" placeholder="/path/to/other" />
+          <label>Export to</label>
+          <input id="extra-export-dest" type="text" placeholder="/path/to/export" />
+        </div>
+        <div class="row inline">
+          <button id="extra-export-missing" class="secondary">Export photos in source not in other</button>
+          <button id="extra-export-keepers" class="secondary">Export keepers (not marked delete) from primary</button>
+        </div>
+        <div class="panel-row center">
+          <label class="switch">
+            <input id="extra-batch-toggle" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+          <span>Mark all cross-library as keep primary / delete other</span>
+          <span id="extra-batch-status" class="hint">Updated 0 pairs.</span>
+        </div>
+        <pre id="extra-log-main" class="log"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer center-text">
+    <div id="info">Load a pair to begin.</div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
